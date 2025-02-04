@@ -2,12 +2,23 @@ import React from 'react';
 import StoryList from './story-list.jsx';
 import useStorageState from "./storage-state.jsx";
 import InputWithLabel from "./input-with-label.jsx";
+import axios from "axios";
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
 function App() {
 
     const [searchTerm, setSearchTerm] = useStorageState('search', '');
+
+    const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+
+    const handleSearchInput = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleSearchSubmit = () => {
+        setUrl(`${API_ENDPOINT}${searchTerm}`);
+    };
 
     const storiesReducer = (state, action) => {
 
@@ -51,30 +62,29 @@ function App() {
         {data: [], isLoading: false, isError: false}
     );
 
-    React.useEffect(() => {
+    const handleFetchStories = React.useCallback( () => {
 
         if (!searchTerm) return;
 
         dispatchStories({type: "STORIES_FETCH_INIT"});
 
-        fetch(`${API_ENDPOINT}${searchTerm}`)
-            .then(response => response.json())
+        axios.get(url)
+            // .then(response => response.json())
             .then((result) => {
                 dispatchStories({
                     type: 'STORIES_FETCH_SUCCESS',
-                    payload: result.hits,
+                    payload: result.data.hits,
                 });
             })
             .catch((err) => {
                 console.error(err);
                 dispatchStories({type: "STORIES_FETCH_FAILURE"});
             });
-    }, [searchTerm])
+    }, [url]);
 
-    const handleSearchChange = (evt) => {
-        console.log("Search Changing: " + evt.target.value);
-        setSearchTerm(evt.target.value);
-    }
+    React.useEffect(() => {
+        handleFetchStories()
+    }, [handleFetchStories]);
 
     const handleRemoveStory = (id) => {
         dispatchStories({
@@ -83,22 +93,27 @@ function App() {
         });
     }
 
-    // const searchedStories = stories.data.filter((story) =>
-    //     story.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
     console.log("App Render: " + stories.data.length);
     return (
         <div>
-            <h1>My Hacker Stories</h1>
+            <h1>My Story Searcher</h1>
 
             <InputWithLabel
                 id="search"
                 value={searchTerm}
-                onInputChange={handleSearchChange}
+                isFocused
+                onInputChange={handleSearchInput}
             >
                 <strong>Search:</strong>
             </InputWithLabel>
-
+            &nbsp;
+            <button
+                type="button"
+                disabled={!searchTerm}
+                onClick={handleSearchSubmit}
+            >
+                Submit
+            </button>
             <hr/>
 
             {/*<StoryListWithData />*/}
@@ -110,7 +125,7 @@ function App() {
                 : (<StoryList
                     list={stories.data}
                     onRemoveStory={handleRemoveStory}
-                    />)
+                />)
             }
         </div>
     );
