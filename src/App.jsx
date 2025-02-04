@@ -1,8 +1,10 @@
-import React from 'react';
+import * as React from 'react';
 import StoryList from './story-list.jsx';
 import useStorageState from "./storage-state.jsx";
 import InputWithLabel from "./input-with-label.jsx";
 import axios from "axios";
+
+import styles from './App.module.css';
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
@@ -12,12 +14,32 @@ function App() {
 
     const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
 
-    const handleSearchInput = (e) => {
-        setSearchTerm(e.target.value);
+    const handleSearchInput = (event) => {
+        setSearchTerm(event.target.value);
     };
 
-    const handleSearchSubmit = () => {
+    const handleSearchSubmit = (event) => {
         setUrl(`${API_ENDPOINT}${searchTerm}`);
+        event.preventDefault();
+    };
+
+    const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit}) => {
+        return (
+            <form onSubmit={onSearchSubmit} className="search-form">
+                <InputWithLabel
+                    id="search"
+                    value={searchTerm}
+                    isFocused
+                    onInputChange={onSearchInput}
+                >
+                    <strong>Search:</strong>
+                </InputWithLabel>
+                &nbsp;
+                <button type="submit" disabled={!searchTerm} className="button button_large">
+                    Submit
+                </button>
+            </form>
+        );
     };
 
     const storiesReducer = (state, action) => {
@@ -62,24 +84,22 @@ function App() {
         {data: [], isLoading: false, isError: false}
     );
 
-    const handleFetchStories = React.useCallback( () => {
-
-        if (!searchTerm) return;
+    const handleFetchStories = React.useCallback( async () => {
 
         dispatchStories({type: "STORIES_FETCH_INIT"});
 
-        axios.get(url)
-            // .then(response => response.json())
-            .then((result) => {
-                dispatchStories({
-                    type: 'STORIES_FETCH_SUCCESS',
-                    payload: result.data.hits,
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                dispatchStories({type: "STORIES_FETCH_FAILURE"});
+        try {
+            const result = await axios.get(url);
+
+            dispatchStories({
+                type: "STORIES_FETCH_SUCCESS",
+                payload: result.data.hits,
             });
+        }
+        catch(err) {
+            console.error(err);
+            dispatchStories({type: "STORIES_FETCH_FAILURE"});
+        }
     }, [url]);
 
     React.useEffect(() => {
@@ -95,28 +115,17 @@ function App() {
 
     console.log("App Render: " + stories.data.length);
     return (
-        <div>
-            <h1>My Story Searcher</h1>
+        <div className={styles.container}>
 
-            <InputWithLabel
-                id="search"
-                value={searchTerm}
-                isFocused
-                onInputChange={handleSearchInput}
-            >
-                <strong>Search:</strong>
-            </InputWithLabel>
-            &nbsp;
-            <button
-                type="button"
-                disabled={!searchTerm}
-                onClick={handleSearchSubmit}
-            >
-                Submit
-            </button>
-            <hr/>
+            <h1 className={styles.headlinePrimary}>My Story Searcher</h1>
 
-            {/*<StoryListWithData />*/}
+            <SearchForm
+                searchTerm={searchTerm}
+                onSearchInput={handleSearchInput}
+                onSearchSubmit={handleSearchSubmit}
+            />
+
+            {/*<hr/>*/}
 
             {stories.isError && <p>Something went wrong!</p>}
 

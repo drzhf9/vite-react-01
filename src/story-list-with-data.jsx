@@ -1,5 +1,5 @@
 import {useState} from "react";
-import getAsyncStories from "./module.jsx";
+// import getAsyncStories from "./module.jsx";
 import StoryList from "./story-list.jsx";
 
 const StoryListWithData = () => {
