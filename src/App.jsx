@@ -1,17 +1,14 @@
 import * as React from 'react';
 import StoryList from './story-list.jsx';
 import useStorageState from "./storage-state.jsx";
-import InputWithLabel from "./input-with-label.jsx";
 import axios from "axios";
-
-import styles from './App.module.css';
+import {StyledContainer, StyledHeadlinePrimary} from "./app-styled-components.jsx";
+import SearchForm from "./search-form.jsx";
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
 function App() {
-
     const [searchTerm, setSearchTerm] = useStorageState('search', '');
-
     const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
 
     const handleSearchInput = (event) => {
@@ -21,25 +18,6 @@ function App() {
     const handleSearchSubmit = (event) => {
         setUrl(`${API_ENDPOINT}${searchTerm}`);
         event.preventDefault();
-    };
-
-    const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit}) => {
-        return (
-            <form onSubmit={onSearchSubmit} className="search-form">
-                <InputWithLabel
-                    id="search"
-                    value={searchTerm}
-                    isFocused
-                    onInputChange={onSearchInput}
-                >
-                    <strong>Search:</strong>
-                </InputWithLabel>
-                &nbsp;
-                <button type="submit" disabled={!searchTerm} className="button button_large">
-                    Submit
-                </button>
-            </form>
-        );
     };
 
     const storiesReducer = (state, action) => {
@@ -114,18 +92,17 @@ function App() {
     }
 
     console.log("App Render: " + stories.data.length);
-    return (
-        <div className={styles.container}>
 
-            <h1 className={styles.headlinePrimary}>My Story Searcher</h1>
+    return (
+        <StyledContainer>
+
+            <StyledHeadlinePrimary>My Story Searcher</StyledHeadlinePrimary>
 
             <SearchForm
                 searchTerm={searchTerm}
                 onSearchInput={handleSearchInput}
                 onSearchSubmit={handleSearchSubmit}
             />
-
-            {/*<hr/>*/}
 
             {stories.isError && <p>Something went wrong!</p>}
 
@@ -136,7 +113,8 @@ function App() {
                     onRemoveStory={handleRemoveStory}
                 />)
             }
-        </div>
+
+        </StyledContainer>
     );
 }
 
