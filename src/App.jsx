@@ -81,6 +81,7 @@ function App() {
     }, [url]);
 
     React.useEffect(() => {
+        console.log("App Fetching ...");
         handleFetchStories()
     }, [handleFetchStories]);
 
