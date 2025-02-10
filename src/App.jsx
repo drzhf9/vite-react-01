@@ -1,9 +1,16 @@
 import * as React from 'react';
-import StoryList from './story-list.jsx';
-import useStorageState from "./storage-state.jsx";
-import axios from "axios";
 import {StyledContainer, StyledHeadlinePrimary} from "./app-styled-components.jsx";
+import {useStorageState} from "./storage-state.jsx";
+import StoryList from './story-list.jsx';
 import SearchForm from "./search-form.jsx";
+import axios from "axios";
+
+const getSumComments = (stories) => {
+    console.log("C: " + stories.data.length);
+    return stories.data.reduce(
+        (result, value) => result + value.num_comments, 0
+    );
+};
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
@@ -81,23 +88,28 @@ function App() {
     }, [url]);
 
     React.useEffect(() => {
-        console.log("App Fetching ...");
-        handleFetchStories()
+        handleFetchStories();
     }, [handleFetchStories]);
 
-    const handleRemoveStory = (id) => {
+    const handleRemoveStory = React.useCallback(
+        (id) => {
         dispatchStories({
             type: 'STORIES_REMOVE_ONE',
             payload: id,
         });
-    }
+    }, [] );
 
-    console.log("App Render: " + stories.data.length);
+    const sumComments = React.useMemo(
+        () => getSumComments(stories),
+        [stories]
+    );
+
+    console.log("B:App " + stories.data.length);
 
     return (
         <StyledContainer>
 
-            <StyledHeadlinePrimary>My Story Searcher</StyledHeadlinePrimary>
+            <StyledHeadlinePrimary>My Hacker Stories with {sumComments} comments.</StyledHeadlinePrimary>
 
             <SearchForm
                 searchTerm={searchTerm}
