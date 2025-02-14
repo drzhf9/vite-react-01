@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {StyledContainer, StyledHeadlinePrimary} from "./app-styled-components.jsx";
-import {useStorageState} from "./storage-state.jsx";
+import useStorageState from "./storage-state.jsx";
 import StoryList from './story-list.jsx';
 import SearchForm from "./search-form.jsx";
 import axios from "axios";

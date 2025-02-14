@@ -19,4 +19,4 @@ const useStorageState = (key, initialState) => {
     return [value, setValue];
 }
 
-export { useStorageState };
+export default useStorageState;
