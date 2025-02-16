@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {StyledButtonSmall, StyledColumn, StyledItem} from "./app-styled-components.jsx";
 import Check from './assets/check.svg?react';
+import { sortBy } from "lodash";
 
 const StoryItem = ({item, onRemoveStory}) => {
 
@@ -25,12 +26,45 @@ const StoryItem = ({item, onRemoveStory}) => {
     );
 }
 
+const SORTS = {
+    NONE:       (list) => list,
+    TITLE:      (list) => sortBy(list, 'title'),
+    AUTHOR:     (list) => sortBy(list, 'author'),
+    COMMENT:    (list) => sortBy(list, 'num_comments').reverse(),
+    POINT:      (list) => sortBy(list, 'points').reverse(),
+};
+
 const StoryList = React.memo(
-    ({list, onRemoveStory}) => (
-        console.log("B:List " + list.length) ||
-        (
+    ({list, onRemoveStory}) => {
+        console.log("B:List " + list.length);
+
+        const [sort, setSort] = React.useState({
+            sortKey: "NONE",
+            isReserse: false
+        });
+
+        const handleSort = (sortKey) => {
+            const isReserse = sort.sortKey === sortKey && !sort.isReserse;
+            setSort({sortKey, isReserse});
+        };
+
+        const sortFunction = SORTS[sort.sortKey];
+
+        const sortedList = sort.isReserse
+            ? sortFunction(list).reverse()
+            : sortFunction(list);
+
+        return (
             <ul>
-                {list.map((item) => (
+                <li style={{display: "flex", justifyContent: "space-between"}}>
+                    <span style={{width: "50%"}}><button type="button" onClick={ ()=> handleSort('TITLE') }>Title</button></span>
+                    <span style={{width: "20%"}}><button type="button" onClick={ () => handleSort('AUTHOR')}>Author</button></span>
+                    <span style={{width: "10%"}}><button type="button" onClick={ () => handleSort('COMMENT') }>Comments</button></span>
+                    <span style={{width: "10%"}}><button type="button" onClick={ () => handleSort('POINT') }>Points</button></span>
+                    <span style={{width: "10%"}}>Actions</span>
+                </li>
+
+                {sortedList.map((item) => (
                     <StoryItem
                         key={item.objectID}
                         item={item}
@@ -38,8 +72,8 @@ const StoryList = React.memo(
                     />
                 ))}
             </ul>
-        )
-    )
+        );
+    }
 );
 
 
